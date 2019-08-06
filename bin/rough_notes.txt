@@ -1,0 +1,11 @@
+ for table in insp.get_table_names():
+        table_structure = insp.get_columns(table)
+        print(table)
+        for column in table_structure:
+            #print("{} = Column({} )".format(column['name'],column['type']))
+            pass
+
+    analyses = DBSession.query(Analysis).limit(10)
+
+    for entry in analyses:
+        print (entry.sample_id)

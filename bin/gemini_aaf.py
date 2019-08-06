@@ -13,17 +13,6 @@ import sys,os
 from datetime import datetime
 
 
-parser = argparse.ArgumentParser(description = 'Calculate gemini variant frequnecy')
-parser.add_argument('Chrom', type = int, help= 'Enter the variant chromosome' )
-parser.add_argument('Pos', type = int, help= 'Enter the variant position' )
-parser.add_argument('Ref', type = str, help= 'Enter the reference allele' )
-parser.add_argument('Alt', type = str, help= 'Enter the alternative allele' )
-args = parser.parse_args()
-
-chrom = args.Chrom
-position = args.Pos
-ref = args.Ref
-alt = args.Alt
 
 now = datetime.now()
 #results_file = now.isoformat() + "_" + str(chrom)  + "_" + str(position) + "_" + ref + "_" + alt +".txt"
@@ -31,7 +20,7 @@ now = datetime.now()
 
 #password = input("Please enter the database password ")
 password = 'readonly'
-database_string = "mysql://ga_ro:" + password + "@sql01/genetics_ark_1_1_0"
+database_string = "mysql://ga_ro:readonly@sql01/genetics_ark_1_1_0"
 engine = create_engine(database_string)
 
 connection = engine.connect()
