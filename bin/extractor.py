@@ -22,7 +22,7 @@ from sqlalchemy import (
     Sequence,
     Float,
     MetaData,
-    Enum
+    Enum,
 )
 import datetime
 
@@ -49,8 +49,10 @@ class Sample(Base):
     project_id = Column(Integer)
     name = Column(String(80))
     labid = Column(String(80))
-    fist_name = Column(String(80))
+    first_name = Column(String(80))
     last_name = Column(String(80))
+
+    analyses = relationship("Analysis", back_populates="sample")
 
 
 class Analysis(Base):
@@ -80,7 +82,9 @@ class Analysis(Base):
     coverage_100x = Column(Float)
     versions = Column(String(2000))
 
-    sample = relationship("Sample", git = [sample_id])
+    sample = relationship("Sample", foreign_keys = [sample_id])
+
+    analysis_variants = relationship("AnalysisVariant", back_populates = "analysis")
 
 
 class Variant(Base):
@@ -93,9 +97,11 @@ class Variant(Base):
     alt = Column(String(100))
     comment = Column(String(200))
 
+    a_variants = relationship("AnalysisVariant", back_populates= "variant")
+
 
 class AnalysisVariant(Base):
-    __tablename__ = "analysis"
+    __tablename__ = "analysis_variant"
     id = Column(Integer, primary_key=True)
     analysis_id = Column(Integer,ForeignKey('analysis.id'))
     variant_id = Column(Integer,ForeignKey('variant.id'))
@@ -121,25 +127,33 @@ def main():
 
     # now you can interact with the database if it exists
     # import all your models then execute this to create any tables that don't yet exist.This does not handle migrations
-    Base.metadata.create_all(engine)
+    #Base.metadata.create_all(engine)
 
-    oVariants = DBSession.query(Variant).filter_by(chrom=query_chrom,pos=query_position,ref=query_ref,alt=query_alt)
-    oAnalysis = DBSession.query(Analysis)
-    oSamples = DBSession.query(Sample).order_by(Sample.name)
-    oAnalysis_Variants = DBSession.query(AnalysisVariant)
+    result_variant = DBSession.query(Variant).filter_by(chrom=query_chrom,pos=query_position,ref=query_ref,alt=query_alt)
+    oAnalysis= DBSession.query(Analysis).join(Sample).join(AnalysisVariant).join(Variant).filter_by(chrom=query_chrom,pos=query_position,ref=query_ref,alt=query_alt)
+    # oSample = DBSession.query(Sample).order_by(Sample.name).limit(10)
+    # oAnalysis_Variants = DBSession.query(AnalysisVariant)
 
-
-
-
+    #print (oAnalysis)
 
     insp = inspect(engine)
     meta = MetaData()
 
+    variant_id = result_variant.id
+    print (variant_id)
 
+    for a in oAnalysis:
+        print(a.sample.name)
+        for av in a.analysis_variants:
+            if av.analysis_id == a.id:
+                #print (av.id,av.depth,a.sample.name)
+                pass
+"""
+    for a in oAnalysis:
+        print (a.sample.name)
+        print (a.analysis_variants[1].id)
+"""
 
-
-    for entry in analyses:
-        print (entry.sample_id)
 
 
 if __name__ == '__main__':
