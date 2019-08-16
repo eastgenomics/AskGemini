@@ -105,6 +105,28 @@ class AnalysisVariant(Base):
     variant = relationship("Variant", foreign_keys = [variant_id],backref="test_variants")
 
 
+class Panel(Base):
+    __tablename__ = "panel"
+    id = Column(Integer,primary_key = True)
+    name = Column(String(200))
+    ext_id = Column(Integer)
+    active = Column(Enum('Y','N'))
+
+
+class Gene(Base):
+    __tablename__ = "gene"
+    id = Column(Integer,primary_key = True)
+    name = Column(String(80))
+    hgnc = Column(Integer)
+
+
+class GenePanel(Base):
+    __tablename__ = "gene_panel"
+    id = Column(Integer, primary_key=True)
+    panel_id = Column(Integer,ForeignKey('panel.id'))
+    gene_id = Column(Integer,ForeignKey('gene.id'))
+
+
 class QuerySample:
 
     def __init__(self, name, depth, quality, allele_count,AAF):
@@ -152,73 +174,90 @@ class FrequencyOutput:
 
 
 def parse_arguments():
-    parser = argparse.ArgumentParser(description = 'Calculate gemini variant frequnecy')
-    parser.add_argument('Chrom', type = int, help= 'Enter the variant chromosome' )
-    parser.add_argument('Pos', type = int, help= 'Enter the variant position' )
-    parser.add_argument('Ref', type = str, help= 'Enter the reference allele' )
-    parser.add_argument('Alt', type = str, help= 'Enter the alternative allele' )
+    parser = argparse.ArgumentParser(description = 'Extract information from GeminiDB')
+    subparsers = parser.add_subparsers(dest = 'subparser_command', help='test test help me')
+
+    freq_parser = subparsers.add_parser('calculate_geminiAF', help='Given a chromosomal position and'
+                                                                  ' ref and alt calculates the frequency in GeminiDB')
+    freq_parser.add_argument('Chrom', type = int, help= 'Enter the variant chromosome' )
+    freq_parser.add_argument('Pos', type = int, help= 'Enter the variant position' )
+    freq_parser.add_argument('Ref', type = str, help= 'Enter the reference allele' )
+    freq_parser.add_argument('Alt', type = str, help= 'Enter the alternative allele' )
+
+    panel_parser = subparsers.add_parser('get_panel_genes', help='Extracts all genes present in requested panel')
+    panel_parser.add_argument('Panel', type = str, help='Enter Panel name')
+
     arguments = parser.parse_args()
+
 
     return arguments
 
-def main(args):
 
-    query_chrom = args.Chrom
-    query_position = args.Pos
-    query_ref = args.Ref
-    query_alt = args.Alt
+def get_variant_if():
+    pass
+
+
+def main(args):
 
     # set up the engine
     ConnectionString = "mysql://ga_ro:readonly@sql01/genetics_ark_1_1_0"
     # echo=True makes the sql commands issued by sqlalchemy get output to the console, useful for debugging
     # engine = create_engine(ConnectionString, echo=True)
     engine = create_engine(ConnectionString)
-
-
     # bind the dbsession to the engine
     DBSession.configure(bind=engine)
-
     # now you can interact with the database if it exists
     # import all your models then execute this to create any tables that don't yet exist.This does not handle migrations
     Base.metadata.create_all(engine)
 
-    # Get variant if=d for variant in question.
-    qVariant = DBSession.query(Variant).filter_by(chrom=query_chrom,pos=query_position,ref=query_ref,alt=query_alt)
+    if args.subparser_command == 'calculate_geminiAF':
+        query_chrom = args.Chrom
+        query_position = args.Pos
+        query_ref = args.Ref
+        query_alt = args.Alt
 
-    for result in qVariant:
-        variant_result = result.id
+        # Get variant if=d for variant in question.
+        qVariant = DBSession.query(Variant).filter_by(chrom=query_chrom, pos=query_position, ref=query_ref,
+                                                      alt=query_alt)
 
-    # Query database using variant_id in question
-    analyses= DBSession.query(Analysis, AnalysisVariant).join(AnalysisVariant,Analysis.id==AnalysisVariant.analysis_id).filter_by(variant_id = variant_result).join(Sample).order_by(Sample.name)
+        for result in qVariant:
+            variant_result = result.id
 
-    query_results = []
-    for a,av in analyses:
-        result = QuerySample(a.sample.name, av.depth, av.quality, av.AAF, av.allele_count)
-        query_results.append(result)
+        # Query database using variant_id in question
+        analyses = DBSession.query(Analysis, AnalysisVariant).join(AnalysisVariant,
+                                                                   Analysis.id == AnalysisVariant.analysis_id).filter_by(
+            variant_id=variant_result).join(Sample).order_by(Sample.name)
 
-    # get total number of samples run
-    qCount = DBSession.query(Sample).filter(or_(Sample.project_id == 1, Sample.project_id == 2 )).count()
+        query_results = []
+        for a, av in analyses:
+            result = QuerySample(a.sample.name, av.depth, av.quality, av.AAF, av.allele_count)
+            query_results.append(result)
 
+        # get total number of samples run
+        qCount = DBSession.query(Sample).filter(or_(Sample.project_id == 1, Sample.project_id == 2)).count()
 
-    frequency = FrequencyOutput(query_chrom,query_position,query_ref,query_alt,query_results,qCount)
-    output = frequency.get_output_name()
-    gemini_AAF = frequency.calculate_frequency()
+        frequency = FrequencyOutput(query_chrom, query_position, query_ref, query_alt, query_results, qCount)
+        output = frequency.get_output_name()
+        gemini_AAF = frequency.calculate_frequency()
 
+        with open(output, "+w") as out:
+            output_writer = csv.writer(out, delimiter='\t', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+            output_writer.writerow(['Sample', 'Depth', 'Qual', 'AAF', 'Allele_Count'])
 
-    with open(output,"+w") as out:
-        output_writer = csv.writer(out,delimiter='\t', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        output_writer.writerow(['Sample','Depth','Qual','AAF','Allele_Count'])
+            for variant in query_results:
+                output_writer.writerow(
+                    [variant.name, variant.depth, variant.quality, variant.AAF, variant.allele_count])
 
-        for variant in query_results:
-            output_writer.writerow([variant.name,variant.depth,variant.quality,variant.AAF,variant.allele_count])
+            output_writer.writerow([])
+            output_writer.writerow(['Gemini', 'Frequency', gemini_AAF])
 
-        output_writer.writerow([])
-        output_writer.writerow(['Gemini','Frequency', gemini_AAF])
+        print("The frequency of the requested variant is :", round(gemini_AAF, 5))
+        print('\n *** A .txt file containing the list of samples has been successfully created. ***')
+        print("Filename: ", output)
 
+    elif args.subparser_command == 'get_panel_genes':
+        print(args.Panel)
 
-    print ("The frequency of the requested variant is :", round(gemini_AAF,5))
-    print ('\n *** A .txt file containing the list of samples has been successfully created. ***')
-    print ("Filename: ", output)
 
 if __name__ == '__main__':
     arguments = parse_arguments()
