@@ -18,7 +18,7 @@ Initial requirements include(collected on the 5/08/19):
     
 ###Tool usage: 
  
- `extractor.py [-h] {calculate_geminiAF,get_panel_genes} `...
+    extractor.py [-h] {calculate_geminiAF,get_panel_genes} 
 
     
     Extract information from GeminiDB
