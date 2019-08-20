@@ -1,3 +1,18 @@
+ filename = args.panel + ".txt"
+    with open(filename,'w+') as f:
+        f.write("{}\n".format(args.panel))
+        if args.t:
+            for key in transcripts.keys():
+                f.write("{} \t {} \n".format(key,transcripts[key]))
+        elif args.s:
+            f.write("{}\n".format(len(samples)))
+            for sample in samples:
+                f.write("{}\n".format(sample))
+        else:
+            for key in genes.keys():
+                f.write("{}\n".format(genes[key]))
+
+
  for table in insp.get_table_names():
         table_structure = insp.get_columns(table)
         print(table)
@@ -9,3 +24,75 @@
 
     for entry in analyses:
         print (entry.sample_id)
+
+
+
+
+    # oSample = DBSession.query(Sample).order_by(Sample.name).limit(10)
+    # oAnalysis_Variants = DBSession.query(AnalysisVariant)
+
+
+
+    #print ("Variant id found {}".format(variant_result))
+
+
+    # oAnalysis= DBSession.query(Analysis).join(Sample).join(AnalysisVariant).join(Variant).filter_by(chrom=query_chrom,pos=query_position,ref=query_ref,alt=query_alt)
+
+
+
+
+"""
+
+ id, address = session.query(A.id, B.address). \
+        join(B, B.user_id == A.id). \
+        filter(A.email_address == 'jack@google.com'). \
+        first()
+
+    #print (oAnalysis)
+
+    insp = inspect(engine)
+    meta = MetaData()
+
+    variant_id = result_variant.id
+    #print (variant_id)
+
+    for a in oAnalysis:
+        #print(a.sample.name)
+        for av in a.analysis_variants:
+            if av.analysis_id == a.id:
+                #print (av.id,av.depth,a.sample.name)
+                pass
+
+    for a in oAnalysis:
+        print (a.sample.name)
+        print (a.analysis_variants[1].id)
+"""
+
+
+
+
+"""
+class TestSum(unittest.TestCase):
+
+    def test_sum(self):
+        self.assertEqual(sum([1, 2, 3]), 6, "Should be 6")
+
+    def test_sum_tuple(self):
+        self.assertEqual(sum((1, 2, 2)), 6, "Should be 6")
+
+if __name__ == '__main__':
+    unittest.main()
+
+"""
+
+#self.engine = create_engine("mysql://ga_ro:readonly@sql01/genetics_ark_1_1_0")
+        #self.session = scoped_session(sessionmaker(bind=self.engine))
+
+        #self.engine = create_engine('sqlite:///:memory:')
+        #Base.metadata.create_all(self.engine)
+        #yield Session
+        #self.sample=(Sample(1,1,test_sample,'GM12.34567','John','Doe'))
+        #self.session.add(self.sample)
+        #self.analysis(Analysis)
+
+        #self.session.commit()
