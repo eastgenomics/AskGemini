@@ -1,0 +1,4 @@
+Sample	Depth	Qual	AAF	Allele_Count
+cardiac	1052	12941.8	0.48384	1
+
+Gemini	Frequency	4.9608096041273936e-05

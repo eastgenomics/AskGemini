@@ -4,6 +4,51 @@ from datetime import datetime
 
 from base import DBSession,engine,Base
 from models import Sample,Analysis,Variant,AnalysisVariant,Panel,Gene,GenePanel,Transcript,SamplePanel
+from sqlalchemy import (or_,and_)
+class QuerySample:
+
+    def __init__(self, name, depth, quality,AAF,allele_count):
+        self.name = name
+        self.depth = depth
+        self.quality = quality
+        self.allele_count = allele_count
+        self.AAF = AAF
+
+    def get_results(self):
+        pass
+
+
+class FrequencyOutput:
+
+    def __init__(self, chrom,position,ref,alt,results,total_count):
+
+        self.chrom = chrom
+        self.position = position
+        self.ref = ref
+        self.alt = alt
+        self.results = results
+        self.total_count = total_count
+
+    def set_output_folder(self):
+        pass
+
+    def get_output_name(self):
+
+        now = datetime.now()
+
+        results_file = str((now.isoformat()[:10])) + "_" + str(self.chrom) + "_" + \
+                       str(self.position) + "_" + self.ref + "_" + self.alt + ".txt"
+
+        return results_file
+
+    def calculate_frequency(self):
+
+        allele_count = 0
+        for sample in self.results:
+            allele_count = allele_count + sample.allele_count
+
+        frequency = allele_count /( self.total_count*2)
+        return frequency
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description = 'Extract information from GeminiDB')
@@ -60,7 +105,7 @@ def find_samples_with_variant(variant_result):
 
 def get_frequency(args,query_results):
     total_count = DBSession.query(Sample).filter(or_(Sample.project_id == 1, Sample.project_id == 2)).count()
-
+    print (total_count)
     frequency = FrequencyOutput(args.Chrom, args.Pos, args.Ref, args.Alt, query_results, total_count)
     output = frequency.get_output_name()
     gemini_AAF = frequency.calculate_frequency()
@@ -143,10 +188,10 @@ def get_panels(gene_id):
 
     return panels
 
-def get_samples(args):
+def get_samples(panel_name):
 
     qSamples = DBSession.query(Sample).join(SamplePanel,SamplePanel.sample_id==Sample.id)\
-        .filter(SamplePanel.panel_name == args.panel).order_by(Sample.name)
+        .filter(SamplePanel.panel_name == panel_name).order_by(Sample.name)
 
     samples = []
     for entry in qSamples:
@@ -157,7 +202,7 @@ def get_samples(args):
 def panel_output(args,genes,transcripts,samples):
 
     if args.t:
-        filename = args.panel + "_ranscripts.txt"
+        filename = args.panel + "_transcripts.txt"
         with open(filename, 'w+') as f:
             f.write("{}\n".format(args.panel))
             for key in transcripts.keys():
@@ -196,12 +241,14 @@ def main(args):
 
     elif args.subparser_command == 'get_panel_genes':
 
+
         if args.gene:
             gene_id = get_gene_id(args)
             panels = get_panels(gene_id)
             gene_output(args,panels)
         elif args.panel:
-            panel_samples = get_samples(args)
+            panel_name = args.panel
+            panel_samples = get_samples(panel_name)
             panel_id = get_panel_id(args)
             panel_genes = get_genes(panel_id)
             panel_transcripts = get_transcripts(panel_genes)
