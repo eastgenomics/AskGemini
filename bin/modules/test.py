@@ -1,12 +1,10 @@
 import unittest
-
 from base import DBSession,engine,Base
 from models import Sample,Analysis,Variant,AnalysisVariant,Panel,Gene,GenePanel,Transcript,SamplePanel
 from extract import *
 
 
 class TestCalculateGeminiAF(unittest.TestCase):
-
 
     def test_find_samples_with_variant(self):
         """Tests  that given a variant id, function returns the correct variant attributes
@@ -28,7 +26,6 @@ class TestCalculateGeminiAF(unittest.TestCase):
         self.assertNotEqual(frequency.calculate_frequency(),5)
 
 
-
 class TestGetPanelGenes(unittest.TestCase):
 
     def test_get_genes(self):
@@ -38,7 +35,6 @@ class TestGetPanelGenes(unittest.TestCase):
         self.assertIn('BSND',genes.values())
         self.assertIn(211,genes.keys())
 
-
     def test_get_samples(self):
         """tests whether script extracts the correct samples"""
         panel_name = 'Aortopathy'
@@ -47,16 +43,12 @@ class TestGetPanelGenes(unittest.TestCase):
         self.assertIn('X005562',samples)
         self.assertIsInstance(samples,list)
 
-
-
     def test_get_panels(self):
 
         gene_id =  19060
         panels = get_panels(gene_id)
         self.assertIsInstance(panels,list)
         self.assertIn('Primary Immunodeficiency (PID)',panels)
-
-
 
 
 if __name__ == '__main__':

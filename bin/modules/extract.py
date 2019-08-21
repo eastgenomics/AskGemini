@@ -5,7 +5,9 @@ from datetime import datetime
 from base import DBSession,engine,Base
 from models import Sample,Analysis,Variant,AnalysisVariant,Panel,Gene,GenePanel,Transcript,SamplePanel
 from sqlalchemy import (or_,and_)
+
 class QuerySample:
+    """object that contains fields that get exported """
 
     def __init__(self, name, depth, quality,AAF,allele_count):
         self.name = name

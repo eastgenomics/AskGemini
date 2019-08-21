@@ -1,5 +1,0 @@
-BRCA1
-Breast Cancer_ICE
-Ovarian cancer_ICE
-Breast And Ovarian Cancer_ICE
-ICE all genes
