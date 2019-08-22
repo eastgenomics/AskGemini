@@ -10,7 +10,7 @@ Modules required if not already installed(version used during development):
 *  mysqlclient==1.3.10 (installed using conda)
 
     
-###Tool usage: 
+### Tool usage: 
  
     extract.py [-h] {calculate_geminiAF,get_genes, get_panels} 
 
