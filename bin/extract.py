@@ -377,7 +377,7 @@ def main(args):
     elif args.subparser_command == 'get_genes':
 
         panel = args.panel
-        all_panels = get_all_panels(panel)
+        get_all_panels(panel)
         panel_samples = get_samples(panel)
         query_panel_id = get_panel_id(panel)
         panel_genes = get_genes(query_panel_id)
@@ -387,12 +387,10 @@ def main(args):
     elif args.subparser_command == 'get_panels':
 
         gene = (args.gene).upper()
-        all_genes = get_all_genes(gene)
+        get_all_genes(gene)
         gene_id = get_gene_id(gene)
         panels = get_panels(gene_id)
         gene_output(gene,panels)
-
-
 
 
 if __name__ == '__main__':
