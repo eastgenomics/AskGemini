@@ -1,13 +1,13 @@
 # STP_programming
 
-A program developed as part of the Programming module for the Scientist Training Programme.
+A program developed as part of the Programming module for the Scientist Training Programme (August 2019).
 
 Main objective of this project is to create a useful python tool for interrogating the Gemini Database.
 
 Modules required if not already installed(version used during development): 
-    Zope==4.1.1 (specifically zope.sqlalchemy==1.1)
-    SQLAlchemy==1.3.7
-    mysqlclient==1.3.10 (installed using conda)
+*  Zope==4.1.1 (specifically zope.sqlalchemy==1.1)
+*  SQLAlchemy==1.3.7
+*  mysqlclient==1.3.10 (installed using conda)
 
     
 ###Tool usage: 
