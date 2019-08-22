@@ -4,7 +4,8 @@ from datetime import datetime
 
 from base import DBSession,engine,Base
 from models import Sample,Analysis,Variant,AnalysisVariant,Panel,Gene,GenePanel,Transcript,SamplePanel
-from sqlalchemy import (or_,and_)
+from sqlalchemy import (or_,and_,exists)
+
 
 class QuerySample:
     """object that contains fields that get exported """
@@ -64,7 +65,7 @@ class FrequencyOutput:
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description = 'Extract information from GeminiDB')
-    subparsers = parser.add_subparsers(dest = 'subparser_command', help='test test help me')
+    subparsers = parser.add_subparsers(dest = 'subparser_command')
 
     freq_parser = subparsers.add_parser('calculate_geminiAF', help='Given a chromosomal position and'
                                                                   ' ref and alt calculates the frequency in GeminiDB')
@@ -73,17 +74,17 @@ def parse_arguments():
     freq_parser.add_argument('Ref', type = str, help= 'Enter the reference allele' )
     freq_parser.add_argument('Alt', type = str, help= 'Enter the alternative allele' )
 
-    panel_parser = subparsers.add_parser('get_panel_genes', help='Extracts all genes present in requested panel')
-    panel_parser.add_argument('--panel', type = str, help='Enter Panel name')
+    panel_parser = subparsers.add_parser('get_genes', help='Extracts all genes present in requested panel')
+    panel_parser.add_argument('panel', type = str, help='Enter Panel name')
     panel_parser.add_argument('-t',action='store_true',help= 'Returns Gene names with clinically active transcripts')
     panel_parser.add_argument('-s',action='store_true',help = 'Returns all sample for a panel')
-    panel_parser.add_argument('--gene',type = str, help = 'Enter Gene name')
 
+    gene_parser = subparsers.add_parser('get_panels', help='Extracts all panels a requested gene is present.')
+    gene_parser.add_argument('gene',type = str, help = 'Enter Gene name')
 
-    arguments = parser.parse_args()
+    args = parser.parse_args()
 
-
-    return arguments
+    return args
 
 
 def get_variant_id(chrom,pos,ref,alt):
@@ -174,15 +175,48 @@ def write_to_file(output,gemini_aaf,query_results):
     print("Filename: ", output)
 
 
-def get_panel_id(panel):
+def get_all_panels(panel_name):
+    """
+    Gets all panels from the database and checks if argument exists.
+    :param panel_name: str -- name of panel requested
+    :return: exits if panel doesn't exist in database
+    """
+    query_all_panels = DBSession.query(Panel.name)
+
+    all_panels = []
+    for result in query_all_panels:
+        all_panels.append(result.name)
+
+    if panel_name not in all_panels:
+        raise SystemExit('\nError: PANEL NOT FOUND. --> {} not present in Gemini\n'.format(panel_name))
+
+
+def get_all_genes(gene):
+    """
+    Gets all genes from the database and checks if argument exists.
+    :param gene: str -- gene name
+    :return: exits if gene doesn't exist
+    """
+    query_all_genes = DBSession.query(Gene.name)
+
+    all_genes = []
+
+    for gene_name in query_all_genes:
+        all_genes.append(gene_name.name)
+
+    if gene not in all_genes:
+        raise SystemExit('\nError: GENE NOT FOUND. --> {} not present in Gemini\n'.format(gene))
+
+
+def get_panel_id(panel_name):
     """
     Interrogates database to get panel id from Panel table.
 
-    :param panel: str - name of panel (has to be exactly the same as the one in the database)
+    :param panel_name: str - name of panel (has to be exactly the same as the one in the database)
     :return: int -- panel table id for requested panel
     """
 
-    qPanel = DBSession.query(Panel).filter_by(name=panel)
+    qPanel = DBSession.query(Panel).filter_by(name=panel_name)
 
     for result in qPanel:
         panel_id = result.id
@@ -340,20 +374,25 @@ def main(args):
         output, gemini_AAF = get_frequency(chrom,pos,ref,alt,query_results)
         write_to_file(output,gemini_AAF,query_results)
 
-    elif args.subparser_command == 'get_panel_genes':
+    elif args.subparser_command == 'get_genes':
 
-        if args.gene:
-            gene = args.gene
-            gene_id = get_gene_id(gene)
-            panels = get_panels(gene_id)
-            gene_output(gene,panels)
-        elif args.panel:
-            panel = args.panel
-            panel_samples = get_samples(panel)
-            panel_id = get_panel_id(panel)
-            panel_genes = get_genes(panel_id)
-            panel_transcripts = get_transcripts(panel_genes)
-            panel_output(args,panel_genes,panel_transcripts,panel_samples)
+        panel = args.panel
+        all_panels = get_all_panels(panel)
+        panel_samples = get_samples(panel)
+        query_panel_id = get_panel_id(panel)
+        panel_genes = get_genes(query_panel_id)
+        panel_transcripts = get_transcripts(panel_genes)
+        panel_output(args, panel_genes, panel_transcripts, panel_samples)
+
+    elif args.subparser_command == 'get_panels':
+
+        gene = (args.gene).upper()
+        all_genes = get_all_genes(gene)
+        gene_id = get_gene_id(gene)
+        panels = get_panels(gene_id)
+        gene_output(gene,panels)
+
+
 
 
 if __name__ == '__main__':
