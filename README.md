@@ -1,55 +1,59 @@
 # STP_programming
 
-A program developed as part of the Programming module for the Scientist Training Programme.
+A program developed as part of the Programming module for the Scientist Training Programme (August 2019).
 
 Main objective of this project is to create a useful python tool for interrogating the Gemini Database.
 
-Initial requirements include(collected on the 5/08/19):
-* calculate geminig AAF for a specific SNP  
-    * export a list of samples containining that SNP
-*  export all variants for a specific gene  
-* extract panel information:
-    * every gene in a panel
-    * every panel that a gene is in 
-    * every sample for a panel
-* extract transcript information
-    * which transcript is active
-    * variants for a specific transcript
+Modules required if not already installed(version used during development): 
+*  Zope==4.1.1 (specifically zope.sqlalchemy==1.1)
+*  SQLAlchemy==1.3.7
+*  mysqlclient==1.3.10 (installed using conda)
+
     
-###Tool usage: 
+### Tool usage: 
  
-    extractor.py [-h] {calculate_geminiAF,get_panel_genes} 
+    extract.py [-h] {calculate_geminiAF,get_genes, get_panels} 
 
     
     Extract information from GeminiDB
+    
 
     positional arguments:
-    {calculate_geminiAF,get_panel_genes}
-                        
+    {calculate_geminiAF,get_genes,get_panels}
     
     calculate_geminiAF  Given a chromosomal position and ref and alt
                         calculates the frequency in GeminiDB
-                        
-                         extractor.py calculate_geminiAF [-h] Chrom Pos Ref Alt
+        
+        usage: extract.py calculate_geminiAF [-h] Chrom Pos Ref Alt
 
-                        positional arguments:
-                          Chrom       Enter the variant chromosome
-                          Pos         Enter the variant position
-                          Ref         Enter the reference allele
-                          Alt         Enter the alternative allele
+        positional arguments:
+          Chrom       Enter the variant chromosome
+          Pos         Enter the variant position
+          Ref         Enter the reference allele
+          Alt         Enter the alternative allele
 
-    
-    get_panel_genes     Extracts all genes present in requested panel
-                        usage: extractor.py get_panel_genes [-h] [--panel PANEL] [-t] [-s]
-                                    [--gene GENE]
+    get_genes           Extracts all genes present in requested panel
+        
+        usage: extract.py get_genes [-h] [-t] [-s] panel
 
-                        optional arguments:
-                          --panel PANEL  Enter Panel name
-                          -t             Returns gene names with clinically active transcripts
-                          -s             Returns all samples for a panel
-                          --gene GENE    Given a gene name, returns all panels that gene is in
+        positional arguments:
+        panel       Enter Panel name
+
+        optional arguments:
+          -h, --help  show this help message and exit
+          -t          Returns Gene names with clinically active transcripts
+          -s          Returns all sample for a panel
+
+    get_panels          Extracts all panels a requested gene is present.
+        
+        usage: extract.py get_panels [-h] gene
+
+    positional arguments:
+    gene        Enter Gene name
 
 
     optional arguments:
-        -h, --help            show this help message and exit
+      -h, --help            show this help message and exit
+
+   
 
