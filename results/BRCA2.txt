@@ -1,0 +1,11 @@
+BRCA2
+Melanoma_ICE
+Chromosome breakage syndromes
+Fanconi anaemia
+Breast Cancer_ICE
+Ovarian cancer_ICE
+Fanconi anaemia_ICE
+Breast And Ovarian Cancer_ICE
+Pancreatic cancer_ICE
+Chromosome breakage for growth retardation
+ICE all genes
