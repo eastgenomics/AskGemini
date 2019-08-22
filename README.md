@@ -11,7 +11,8 @@ Modules required if not already installed(version used during development):
 
     
 ### Tool usage: 
- 
+
+'''bash 
     extract.py [-h] {calculate_geminiAF,get_genes, get_panels} 
 
     
@@ -56,4 +57,4 @@ Modules required if not already installed(version used during development):
       -h, --help            show this help message and exit
 
    
-
+'''
