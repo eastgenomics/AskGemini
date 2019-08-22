@@ -6,10 +6,13 @@ from extract import *
 
 class TestCalculateGeminiAF(unittest.TestCase):
 
+    def test_get_variant_id(self):
+        id = 4810052
+        self.assertEqual(get_variant_id(1,16271260,'G','A'),id)
+
     def test_find_samples_with_variant(self):
         """Tests  that given a variant id, function returns the correct variant attributes
         """
-
         result = find_samples_with_variant(11736653)[0]
         expected = ['cardiac',1052,12941.8,0.48384,1]
         self.assertEqual(result.name,'cardiac')
@@ -26,7 +29,23 @@ class TestCalculateGeminiAF(unittest.TestCase):
         self.assertNotEqual(frequency.calculate_frequency(),5)
 
 
+
 class TestGetPanelGenes(unittest.TestCase):
+
+    def test_get_all_genes(self):
+
+        with self.assertRaises(SystemExit):
+            get_all_genes('NotAGene')
+
+    def test_get_all_panels(self):
+        with self.assertRaises(SystemExit):
+            get_all_panels('NotAPanel')
+
+    def test_get_panel_id(self):
+        self.assertEqual(get_panel_id('CAKUT'),433)
+
+    def test_get_gene_id(self):
+        self.assertEqual(get_gene_id('PTEN'),9503)
 
     def test_get_genes(self):
         """tests correct list of genes is returned"""
