@@ -1,5 +1,12 @@
-from base import Base
+#!/usr/bin/python3
+#
+#
+#
+#
+# Adriana Toutoudaki (August 2019) 
+# contact: adriana.toutoudaki@addenbrookes.nhs.uk
 
+from base import Base
 from sqlalchemy.orm import relationship
 from sqlalchemy import (
     Table,
