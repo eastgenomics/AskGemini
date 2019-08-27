@@ -1,3 +1,11 @@
+#!/usr/bin/python3
+#
+#
+#
+#
+# Adriana Toutoudaki (August 2019) 
+# contact: adriana.toutoudaki@addenbrookes.nhs.uk
+
 from sqlalchemy import create_engine, inspect
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session,sessionmaker,relationship
