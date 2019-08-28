@@ -13,14 +13,11 @@ Modules required if not already installed(version used during development):
 ### Tool usage: 
 
 ```bash 
-    extract.py [-h] {calculate_geminiAF,get_genes, get_panels} 
+    extract.py [-h] {calculate_geminiAF,panel_information, get_panels} 
 
     
     Extract information from GeminiDB
     
-
-    positional arguments:
-    {calculate_geminiAF,get_genes,get_panels}
     
     calculate_geminiAF  Given a chromosomal position and ref and alt
                         calculates the frequency in GeminiDB
@@ -35,10 +32,10 @@ Modules required if not already installed(version used during development):
 
     get_genes           Extracts all genes present in requested panel
         
-        usage: extract.py get_genes [-h] [-t] [-s] panel
+        usage: extract.py panel_information [-h] --panel PANEL [-t] [-s]
 
-        positional arguments:
-        panel       Enter Panel name
+        required arguments:
+        --panel PANEL  Panel name. Please surround in "" if more than one word.
 
         optional arguments:
           -h, --help  show this help message and exit

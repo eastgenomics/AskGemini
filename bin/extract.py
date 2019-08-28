@@ -76,13 +76,15 @@ def parse_arguments():
 
     freq_parser = subparsers.add_parser('calculate_geminiAF', help='Given a chromosomal position and'
                                                                   ' ref and alt calculates the frequency in GeminiDB')
-    freq_parser.add_argument('Chrom', type = int, help= 'Enter the variant chromosome' )
+    freq_parser.add_argument('Chrom', type = str, help= 'Enter the variant chromosome' )
     freq_parser.add_argument('Pos', type = int, help= 'Enter the variant position' )
     freq_parser.add_argument('Ref', type = str, help= 'Enter the reference allele' )
     freq_parser.add_argument('Alt', type = str, help= 'Enter the alternative allele' )
 
-    panel_parser = subparsers.add_parser('get_genes', help='Extracts all genes present in requested panel')
-    panel_parser.add_argument('panel', type = str, help='Enter Panel name')
+    panel_parser = subparsers.add_parser('panel_information', help='Extracts information about requested panel, '
+                                                        'default action extracts list of gens present in that panel')
+    panel_parser.add_argument('--panel', type = str, required=True,
+                              help='Panel name.Please surround in "" if more than one word.')
     panel_parser.add_argument('-t',action='store_true',help= 'Returns Gene names with clinically active transcripts')
     panel_parser.add_argument('-s',action='store_true',help = 'Returns all sample for a panel')
 
@@ -371,7 +373,10 @@ def main(args):
 
     if args.subparser_command == 'calculate_geminiAF':
 
-        chrom = args.Chrom
+        if args.Chrom == 'X' or args.Chrom == 'Y':
+            chrom = args.Chrom
+        else:
+            chrom = int(args.Chrom)
         pos = args.Pos
         ref = args.Ref
         alt = args.Alt
@@ -381,7 +386,7 @@ def main(args):
         output, gemini_AAF = get_frequency(chrom,pos,ref,alt,query_results)
         write_to_file(output,gemini_AAF,query_results)
 
-    elif args.subparser_command == 'get_genes':
+    elif args.subparser_command == 'panel_information':
 
         panel = args.panel
         get_all_panels(panel)
