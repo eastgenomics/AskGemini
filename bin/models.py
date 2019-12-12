@@ -133,3 +133,23 @@ class SamplePanel(Base):
     id = Column(Integer, primary_key = True)
     sample_id = Column(Integer,ForeignKey('sample.id'))
     panel_name = Column(String(200))
+
+class TranscriptRegion(Base):
+    __tablename__ = "transcript region"
+    id = Column(Integer, primary_key=True)
+    transcript_id = Column(Integer,ForeignKey('transcript.id'))
+    region_id = Column(Integer,ForeignKey('region.id'))
+    exon_nr = Column(Integer)
+
+class Region(Base):
+    __tablename__ = "region"
+    id = Column(Integer,primary_key=True)
+    reference_id = Column(Integer,ForeignKey('reference.id'))
+    chrom = Column(Strin(80))
+    start = Column(Integer)
+    end = Column (Integer)
+
+class Reference(Base):
+    __tablename_ = "reference"
+    id = Column(Integer,primary_key=True)
+    name = Column(String(80))
