@@ -20,6 +20,7 @@ import csv
 from base import DBSession,engine,Base
 from models import Sample,Analysis,Variant,AnalysisVariant,Panel,Gene,GenePanel,Transcript,SamplePanel
 from models import TranscriptRegion, Region
+from sqlalchemy.sql.expression import func
 from sqlalchemy import (or_,and_,exists)
 from extract import get_gene_id
 
@@ -53,22 +54,67 @@ def get_transcript_id(gene_id):
 
 
 def get_exon_coordinates(tr_id):
+    """
 
-    qTRegions = DBSession.query(TranscriptRegion).join(Region, Region.id == TranscriptRegion.region_id )\
+    :param tr_id:
+    :return:
+    """
+
+    qTRegions = DBSession.query(TranscriptRegion,Region).join(Region, Region.id == TranscriptRegion.region_id )\
         .filter(TranscriptRegion.transcript_id==tr_id)
 
-    regions = {}
-    for entry in qTRegions:
-        print (entry)
+    regions = []
+    for tr, r in qTRegions:
+        query = QueryRegion(r.id,tr_id, r.chrom,r.start,r.end, tr.exon_nr)
+        regions.append(query)
 
-def get_genes(panel_id):
-    for key in genes.keys():
-        g2t = DBSession.query(Transcript).join(Gene, Gene.id == Transcript.gene_id)\
-            .filter(and_(Transcript.gene_id== key,Transcript.clinical_transcript=='Y'))
-        for entry in g2t:
-            transcripts[genes[key]] = entry.refseq
 
-    return transcripts
+    return regions
+
+
+class QueryRegion:
+
+    def __init__(self,region_id,transcript, chrom, start,end, exon):
+        self.region_id = region_id
+        self.transcript = transcript
+        self.chrom = chrom
+        self.start = start
+        self.end = end
+        self.exon = exon
+        self.range = range(self.start - 5, self.end + 6)
+
+
+
+    def get_variant_ids(self):
+
+
+        qIndelInstances = DBSession.query(Variant).filter(
+          Variant.chrom == self.chrom,Variant.pos>= self.start-5,Variant.pos<=self.end+5,or_(
+          func.length(Variant.ref)>1,func.length(Variant.alt)>1))
+
+
+        self.indel_ids = []
+        for entry in qIndelInstances:
+            self.indel_ids.append(entry.id)
+
+        self.sv_ids = []
+        qSVlInstances = DBSession.query(Variant).filter(
+          Variant.chrom == self.chrom,Variant.pos>= self.start-5,Variant.pos<=self.end+5)
+
+        for entry in qSVlInstances:
+            self.sv_ids.append(entry.id)
+
+        return self.sv_ids,self.indel_ids
+
+
+
+    def get_variants(self):
+
+        qCountIndels = DBSession.query(AnalysisVariant).filter(AnalysisVariant.variant_id.in_(self.indel_ids), AnalysisVariant.quality >500).count()
+        qCountSVs = DBSession.query(AnalysisVariant).filter(AnalysisVariant.variant_id.in_(self.sv_ids), AnalysisVariant.quality >500).count()
+
+        return qCountSVs, qCountIndels
+
 
 
 def main(args):
@@ -76,8 +122,33 @@ def main(args):
     gene_id = get_gene_id(gene)
 
     transcript_id = get_transcript_id(gene_id)
+    query_regions = get_exon_coordinates(transcript_id)
 
-    get_exon_coordinates(transcript_id)
+    unique_SVs = 0
+    unique_INDELS = 0
+
+    SVs = 0
+    INDELS = 0
+
+    for region in query_regions:
+        uSV,uIndel = region.get_variant_ids()
+        SV,Indel = region.get_variants()
+
+        unique_SVs += len(uSV)
+        unique_INDELS += len(uIndel)
+        SVs += SV
+        INDELS += Indel
+
+
+    print (gene)
+    print ("SVs ",SVs, "unique ", unique_SVs)
+    print ("Indels ", INDELS, "unique ", unique_INDELS)
+
+
+
+
+
+
 
 
 if __name__ == '__main__':
