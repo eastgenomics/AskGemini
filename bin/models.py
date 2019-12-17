@@ -128,6 +128,8 @@ class Transcript(Base):
     clinical_transcript = Column(Enum('Y','N'))
     comment = Column(String(200))
 
+    transcript_regions = relationship("TranscriptRegion",backref = "transcript")
+
 class SamplePanel(Base):
     __tablename__ =  "sample_panel"
     id = Column(Integer, primary_key = True)
@@ -135,21 +137,25 @@ class SamplePanel(Base):
     panel_name = Column(String(200))
 
 class TranscriptRegion(Base):
-    __tablename__ = "transcript region"
+    __tablename__ = "transcript_region"
     id = Column(Integer, primary_key=True)
     transcript_id = Column(Integer,ForeignKey('transcript.id'))
     region_id = Column(Integer,ForeignKey('region.id'))
     exon_nr = Column(Integer)
 
+    regions = relationship("Region",backref = "transcript region")
+
+
 class Region(Base):
     __tablename__ = "region"
     id = Column(Integer,primary_key=True)
     reference_id = Column(Integer,ForeignKey('reference.id'))
-    chrom = Column(Strin(80))
+    chrom = Column(String(80))
     start = Column(Integer)
     end = Column (Integer)
 
+
 class Reference(Base):
-    __tablename_ = "reference"
+    __tablename__ = "reference"
     id = Column(Integer,primary_key=True)
     name = Column(String(80))
