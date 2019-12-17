@@ -1,4 +1,5 @@
-# STP_programming
+# AskGemini
+A set of scripts so you can avoid running raw SQL queries on GeminiDB.
 
 A program developed as part of the Programming module for the Scientist Training Programme (August 2019).
 
