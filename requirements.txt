@@ -1,4 +1,4 @@
-AccessControl==4.0
+AccessControl==4.3
 Acquisition==4.6
 AuthEncoding==4.1
 beautifulsoup4==4.8.0
